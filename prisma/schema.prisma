@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  students Student[]
+
+  @@map("users")
+}
+
+model Course {
+  id   String @id @default(uuid())
+  name String @unique
+
+  moduleCourses ModuleCourse[]
+  students      Student[]
+
+  @@map("courses")
+}
+
+model Module {
+  id   String @id @default(uuid())
+  name String @unique
+
+  moduleCourses ModuleCourse[]
+  videos        Video[]
+
+  @@map("modules")
+}
+
+model ModuleCourse {
+  id String @id @default(uuid())
+
+  module    Module @relation(fields: [module_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  module_id String
+
+  course    Course @relation(fields: [course_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  course_id String
+
+  @@map("module_courses")
+}
+
+model Student {
+  id String @id @default(uuid())
+
+  user    User   @relation(fields: [user_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  user_id String
+
+  course    Course @relation(fields: [course_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  course_id String
+
+  studentViews StudentView[]
+
+  @@map("students")
+}
+
+model Video {
+  id    String @id @default(uuid())
+  title String @unique
+
+  module    Module @relation(fields: [module_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  module_id String
+
+  studentViews StudentView[]
+
+  @@map("videos")
+}
+
+model StudentView {
+  id String @id @default(uuid())
+
+  student    Student @relation(fields: [student_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  student_id String
+
+  video    Video  @relation(fields: [video_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  video_id String
+
+  @@map("student_views")
+}
